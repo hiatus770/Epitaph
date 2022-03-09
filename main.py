@@ -1,10 +1,11 @@
 import os
 
 # Directories #
-txt = "input.txt"
+txt = "io/input.txt"
+output = "io/output.txt"
 py = "compiled.py"
 
-# Functions # 
+# Functions #
 def readTxt():
     with open(txt, "r") as ipt:
         lines = ipt.readlines() 
@@ -15,16 +16,20 @@ def printFile(dir = py):
         lines = ipt.readlines() 
         for line in lines:
             print(line, end = "")
+    print()
 
 def compile():
     ipt = readTxt()
     write = open(py, "w")
-    write.writelines(ipt)
-         
+    for l in ipt:
+        if not l.startswith("%"):
+            write.write(l)
+    
 
-def runCode():
-    "nothing" 
+def run():
+    os.system("python3 " + py + " > " + output)
 
-readTxt()
-compile() 
+# Compiling to a file, Printing the file, and running it to output.txt
+compile()
 printFile()
+run()

@@ -11,7 +11,7 @@ def readTxt():
         lines = ipt.readlines() 
         return lines
 
-def printFile(dir = py):
+def printFile(dir = py): 
     with open(dir, "r") as ipt:
         lines = ipt.readlines() 
         for line in lines:
@@ -22,7 +22,11 @@ def compile():
     ipt = readTxt()
     write = open(py, "w")
     for l in ipt:
-        if not l.startswith("%"):
+        if not l.startswith("//"):
+            # logic for the entire esolang will fit into here?
+
+            
+            
             write.write(l)
     
 

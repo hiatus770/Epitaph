@@ -21,6 +21,11 @@ def printFile(dir = output):
 # Will split line into methods #
 def splitAlgo(l):
     methods = {}
+    cnt = 0
+    for g in range(len(l)):
+        cnt = g
+        char = l[cnt]
+        
 
 # Executes a line of code # 
 def executeCode(code):

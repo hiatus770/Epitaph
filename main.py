@@ -18,32 +18,35 @@ def printFile(dir = output):
             print(line, end = "")
     print()
 
-# Will split line into methods #
+# Will split line into methods and does matter when "", {} and () are present #
 def splitAlgo(l):
     methods = list()
     cnt = 0
-    print("LENGTH OF L: 0 -", len(l)-1)
     for i in range(len(l)):
-        print("In loop: ", i, "\nchar: ", l[i])
-        if l[i] == " " or i == 0:
-            print(i, " is space")
+        if len(l) == 1:
+            methods.append(l)
+            break
+        if l[i] == " " or i == 0 and l != "\n":
             cnt = i+1
             while l[cnt] != " ":
                 cnt = cnt + 1
+                if (l[cnt] == "("):
+                    cnt = l.find(")", cnt)
+                if (l[cnt] == "{"):
+                    cnt = l.find("}", cnt)
+                    if (cnt == -1):
+                        cnt = len(l)-1
+                if (l[cnt] == '"'):
+                    cnt = l.find('"', cnt+1)
                 if (cnt == len(l)-1):
-                    print("End of line")
                     cnt = len(l)
                     break
-            
-                print(i, cnt, l[cnt])
-
             if (l[i:cnt] != " ") and i == 0:
                 methods.append(l[i:cnt])
             elif (l[i:cnt] != " "):
                 methods.append(l[i+1:cnt])
-            
-                
-
+        if (cnt == len(l)):
+            break
     print(methods)
 
 # Executes a line of code # 

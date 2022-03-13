@@ -1,5 +1,4 @@
 import os
-from unicodedata import name
 
 # File Directories #
 epi = "io/epitaph.epi"
@@ -7,7 +6,7 @@ output = "io/output.txt"
 
 # Variables #
 bracketID = 1 
-idCnt = 0
+idCnt = 0 # The id count for all the variables 
 var = list() # array keeping track of id to value
 names = dict() # dict keeping track of name to id
 nameTracker = set() # keeps track of built variables
@@ -36,15 +35,10 @@ def accumulate(text, lineNumber):
     # result list # 
     result = list()
 
-    # remove spaces # 
-    # text = text.replace(" ", "", -1)
-    
     # Split by operator # 
     lastOperator = 0
     for i in range(0, len(text)): 
-        print(i, text[i])
         if text[i] == "+" or  text[i] == "-" or text[i] == "/" or text[i] == "*":
-            print(lastOperator, i)
             if text[lastOperator:i] != "":
                 result.append(text[lastOperator:i])
             result.append(text[i])
@@ -59,24 +53,59 @@ def accumulate(text, lineNumber):
     for i in range(len(result)):
         if result[i] == "*" or result[i] == "/":
             md.append(i)
-        if result[i] == "+" or result[i] == "-":
-            sa.append(i)
 
     for i in range(len(result)):
         obj = result[i]
         if obj.isdigit():
             result[i] = int(obj)
         elif obj.isalpha():
-            print("VARS/STRINGS: ", obj)
             if not obj.startswith('"'):
                 if obj in nameTracker:
                     result[i] = var[names[obj]]
-                else:
-                    print("ERROR ON LINE", lineNumber, obj, "WAS NOT DEFINED")
 
+    print("PERFORMING BEDMAS ON: ", result)
 
-    print("Accumulated:", result)
+    cnt = 0 
+    err = 0
 
+    # do all * / parts of accumulate # 
+    while(len(md)!=0):
+        if (result[md[0]-err]=="/"):
+            result[md[0]-err] = result[md[0]-1-err] / result[md[0]+1-err]
+            del result[md[0]-1-err]
+            del result[md[0]-err]
+            del md[0]
+            err = err + 2
+        else:
+            result[md[0]-err] = result[md[0]+1-err] * result[md[0]-1-err]
+            del result[md[0]-1-err]
+            del result[md[0]-err]
+            del md[0]
+            err = err + 2
+
+    for i in range(len(result)):
+        if result[i] == "+" or result[i] == "-":
+            sa.append(i)
+
+    # reset error # 
+    err = 0
+
+    # do all +/- parts of accumulate # 
+    while(len(sa)!=0):
+        if (result[sa[0]-err]=="+"):
+            result[sa[0]-err] = result[sa[0]+1-err] + result[sa[0]-1-err]
+            del result[sa[0]-1-err]
+            del result[sa[0]-err]
+            del sa[0]
+            err = err + 2
+        else:
+            result[sa[0]-err] = result[sa[0]+1-err] - result[sa[0]-1-err]
+            del result[sa[0]-1-err]
+            del result[sa[0]-err]
+            del sa[0]
+            err = err + 2
+    print("ACCUMULATED:", result, "\n")
+    return result[0]
 
 # Will split line into methods and does matter when "", {} and () are present #
 def splitAlgo(l):
@@ -118,7 +147,6 @@ def splitAlgo(l):
 def merge(lines, a, b):
     result = ""
     for i in range(a+1, b):
-        print(i)
         lines[a] = str(lines[a]) + str(lines[i]) 
     return lines[a]; 
 
@@ -128,41 +156,40 @@ def run():
     # Variables # 
     ipt = readTxt()
     lineCount = 1
-    global idCnt
 
+    global idCnt
     global var  # array keeping track of id to value
     global names  # dict keeping track of name to id
     global nameTracker  # keeps track of built variables
 
-
     for l in ipt: 
         # Line count for errors #
         lineCount = lineCount + 1
+        l = l.replace("\n", "", -1)
         line = splitAlgo(l)
+
+        if len(line) >= 3:
+            if line[1] == "=" and line[0] in nameTracker:
+                #  Assigning a value 
+                print("ASSIGNMENT:", l)
+                text = str(merge(line, 2, len(line)))
+                varID = names[line[0]] 
+                var[varID] = accumulate(text, lineCount)
+
+            elif line[1] == "=" and line[0] not in nameTracker:
+                # Creation of a new variable # 
+                print("CREATION OF:", line[0], "ON LINE", lineCount)
+                text = str(merge(line, 2, len(line)))
+                data = accumulate(text, lineCount)
+                var.append(data)
+                print("VALUE OF", line[0], "IS", data)
+                names[line[0]] = idCnt 
+                nameTracker.add(line[0])
+                idCnt = idCnt + 1 
         
-        if len(line) >= 4:
-            if line[0] == "%" and line[2] == "=":
-                if line[1] in nameTracker:
-                    print("VARIABLE ALREADY CREATED")
-                    text = str(merge(line, 3, len(line)))
-                    accumulate(text, lineCount)
-    
-                else:
-                    # this means the variable will be created!!!
-                    var.append(line[3])
-                    names[line[1]] = idCnt 
-                    nameTracker.add(line[1])
-                    idCnt = idCnt + 1 
-    
-    # print(var)
-    # print(names)
-    # print(nameTracker)
-
-
-
-
-
-
+        if l.endswith("++"):
+                l.replace("++", "")
+                
 
 # Compiling to a file, Printing the file, and running it to output.txt
 run()

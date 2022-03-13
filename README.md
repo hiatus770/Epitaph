@@ -1,2 +1,2 @@
 #           Epitaph
-My shitty attempt at making an esolang
+My foreshadowed attempt at making an esolang

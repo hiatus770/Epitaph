@@ -1,0 +1,5 @@
+variable1 = 0
+
+if (variable1 < 10){
+    etch("VARIABLE ONE IS LESS THAN", 10)
+}

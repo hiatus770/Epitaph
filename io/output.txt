@@ -1,2 +1,3 @@
-Among us
-dddd
+VARIABLE ONE IS LESS THAN
+,
+10

@@ -1,10 +1,5 @@
-% Comparing two inputs %
-
-% Taking in input %
-fetch(var1)
-fetch(var2)
-
-if (var1 > var2){
-    % Printing out the result % 
-    etch(var1, ">", var2)
+var = 1
+while (var < 10){
+    var = var + 1
+    etch("SUS")
 }

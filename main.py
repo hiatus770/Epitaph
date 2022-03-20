@@ -247,7 +247,7 @@ def truFalse(text):
         elif type(obj) == str:
             if not obj.startswith('"'):
                 if obj in nameTracker:
-                    #print("FOUND VARIABLE", obj)
+                    print("FOUND VARIABLE", var[names[obj]])
                     result[i] = var[names[obj]]
 
     # find all == != < >
@@ -332,6 +332,24 @@ def ifStatement(line, startIf, endIf):
         print("Running code: ", code)
         runChunk(code, startIf)
 
+# While loop! # 
+def whileLoop(line, start, end):
+    code = list()
+
+    openingBracket = line.find("(")
+    closingBracket = line.find(")")
+    condition = truFalse(line[openingBracket+1:closingBracket])
+
+    for i in range(start+1, end):
+        # print("APPENDING", i)
+        code.append(ipt[i])
+    
+    print("While loop from: ", start, end)
+
+    while condition == 0:
+        runChunk(code, start)   
+        condition = truFalse(line[openingBracket+1:closingBracket])     
+    
 
 # Make sure this is updated to run constantly or else if statements will be kinda wackilicious # 
 def runChunk(code, lineIndex):
@@ -365,7 +383,7 @@ def runChunk(code, lineIndex):
                 print("ASSIGNMENT:", l)
                 text = str(merge(line, 2, len(line)))
                 varID = names[line[0]] 
-                var[varID] = accumulate(text, lineCount)
+                var[varID] = accumulate(text, lineCount)[0]
 
             elif line[1] == "=" and line[0] not in nameTracker:
                 # Creation of a new variable # 
@@ -412,6 +430,26 @@ def runChunk(code, lineIndex):
                         break; 
 
                 ifStatement(ifLine, ifState, ifEnd)
+
+            if line[0].startswith("while") and isNotComment: 
+                print("WHILE LOOP")
+                print(line)
+                whileLine = merge(line, 0, len(line))
+                whileState = lineCount # where the if statement starts
+                whileEnd = lineCount
+                #print("IF LINE: ", ifLine)
+                for i in range(lineCount, len(ipt)):
+                    print("LOOKING FOR }"+whileLine[len(whileLine)-1])
+                    q = ipt[i].replace(" ", "")
+                    q = q.replace("\n", "")
+                    #print(q)
+                    if (q == "}"+whileLine[len(whileLine)-1]):
+                        whileEnd = i
+                        lineCount = i
+                        break; 
+
+
+                whileLoop(whileLine, whileState, whileEnd)
 
 # Assigns all the bracket ID's in the code for code moment! # 
 def bracketAssign():

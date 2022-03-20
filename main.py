@@ -122,7 +122,7 @@ def accumulate(text, lineNumber=69):
             del sa[0]
             err = err + 2
     
-    #print("ACCUMULATED:", result, "\n")
+    print("ACCUMULATED:", result, "\n")
     return result
 
 # Will split line into methods and does matter when "", {} and () are present #
@@ -177,17 +177,39 @@ def toOutput(info):
         for i in info:
             i = str(i)
             i = i.replace('"', "", -1)
-            out.write(str(i)+"\n")
+            i = i.replace(",", " ", -1)
+            out.write(str(i))
 
-# takes in stuff to print from program
+# The print statement of Epitaph # 
 def etch(line):
-
     opening = line.find("(")
     closing = line.find(")")
     inBracket = line[opening+1:closing]
     acc = accumulate(inBracket)
     toOutput(acc)
 
+# Getting input for epitaph # 
+def fetch(cmd):
+
+    ### GLOBAL VARIABLES ### 
+    global bracketID 
+    global idCnt 
+    global var  
+    global names
+    global nameTracker      
+
+    openingBracket = cmd.find("(")
+    closingBracket = cmd.find(")")
+    varName = cmd[openingBracket+1:closingBracket]
+    if varName in nameTracker:
+        var[names[varName]] = input()
+    elif varName not in nameTracker:
+        names[varName] = idCnt 
+        nameTracker.add(varName)
+        var.append(accumulate(input())[0])
+        idCnt = idCnt + 1 
+
+# Determines if input is true (0) or false (1) # 
 def truFalse(text):
     print("EVALUATING: ", text) 
 
@@ -231,7 +253,7 @@ def truFalse(text):
     # find all == != < >
     for i in range(len(result)):
         if result[i] == "<"  or result[i] == ">" or result[i] == "=" or result[i] == "!":
-            if type(result[i-1]) == int or type(result[i-1]) == float and type(result[i+1]) == int or type(result[i+1]) == float:
+            if type(result[i-1]) == int or type(result[i-1]) == float and type(result[i+1]) == int or type(result[i+1]) == float or type(result[i-1]) == str and type(result[i+1]) == str:
                 md.append(i)
 
 
@@ -288,7 +310,7 @@ def truFalse(text):
     else:
         return 1
 
-
+# If statement thing for esolang # 
 def ifStatement(line, startIf, endIf):
     print(line)
     code = list()
@@ -310,7 +332,8 @@ def ifStatement(line, startIf, endIf):
         print("Running code: ", code)
         runChunk(code, startIf)
 
-# takes in a list of lines from the program to run like the whole program was run!!!, could be recursivE??!??!?!
+
+# Make sure this is updated to run constantly or else if statements will be kinda wackilicious # 
 def runChunk(code, lineIndex):
     global bracketID # bracket id moment!!!
     global idCnt # some idcnt for var
@@ -366,6 +389,10 @@ def runChunk(code, lineIndex):
                 print("ETCH FOUND!")
                 etch(line[0])
 
+            if line[0].replace(" ", "").startswith("fetch") and isNotComment: 
+                print("FETCH FOUND")
+                fetch(line[0])
+
             if line[0].startswith("if") and isNotComment: 
                 print("IF STATEMENT")
                 print(line)
@@ -386,6 +413,7 @@ def runChunk(code, lineIndex):
 
                 ifStatement(ifLine, ifState, ifEnd)
 
+# Assigns all the bracket ID's in the code for code moment! # 
 def bracketAssign():
     global bracketID 
     print("ASSIGNING BRACKET ID")
@@ -403,8 +431,8 @@ def bracketAssign():
         cnt = cnt + 1 
     print("Assigned:", ipt)
 
-# Runs entire code # 
-def run():
+# Initiates the code # 
+def main():
     # Variables # 
     global ipt
     ipt = readTxt()
@@ -417,70 +445,9 @@ def run():
     global names  # dict keeping track of name to id
     global nameTracker  # keeps track of built variables
 
-    while lineCount < len(ipt)-1: 
-        # Line count loop #
-        lineCount = lineCount + 1
-        l = ipt[lineCount]
-        l = l.replace("\n", "", -1)
-        line = splitAlgo(l)
-
-        # Commenting Codee 
-        isNotComment = True 
-        if l.startswith("%") and l.endswith("%"):
-            isNotComment =  False
-
-        if len(line) >= 3 and isNotComment:
-            if line[1] == "=" and line[0] in nameTracker:
-                #  Assigning a value 
-                print("ASSIGNMENT:", l)
-                text = str(merge(line, 2, len(line)))
-                varID = names[line[0]] 
-                var[varID] = accumulate(text, lineCount)
-
-            elif line[1] == "=" and line[0] not in nameTracker:
-                # Creation of a new variable # 
-                print("CREATION OF:", line[0], "ON LINE", lineCount)
-                text = str(merge(line, 2, len(line)))
-                dataList = accumulate(text, lineCount)
-                print(dataList)
-                data = ""
-                if len(dataList) > 1:
-                    print("INVALID VARIABLE")
-                else:
-                    data = dataList[0] 
-                var.append(data)
-                print("VALUE OF", line[0], "IS", data)
-                names[line[0]] = idCnt 
-                nameTracker.add(line[0])
-                idCnt = idCnt + 1 
-
-        if not line == []:
-            if line[0].replace(" ", "").startswith("etch") and isNotComment:
-                print("ETCH FOUND!")
-                etch(line[0])
-
-            if line[0].startswith("if") and isNotComment: 
-                print("\nIF STATEMENT")
-                print(line)
-                ifLine = merge(line, 0, len(line))
-                ifState = lineCount # where the if statement starts
-                ifEnd = lineCount
-                print("LOOKING FOR }"+ifLine[len(ifLine)-1])
-                for i in range(lineCount, len(ipt)):
-                    q = ipt[i].replace(" ", "")
-                    q = q.replace("\n", "")
-                    print("q:", q)
-                    if (q == "}"+ifLine[len(ifLine)-1]):
-                        print("FOUND CLOSING BRACKET FOR IF: ", i)
-                        ifEnd = i
-                        lineCount = i
-                        break; 
-
-                ifStatement(ifLine, ifState, ifEnd)
-
-
+    runChunk(ipt, -1)
 
 # Compiling to a file, Printing the file, and running it to output.txt
-run()
+main()
 
 

@@ -1,5 +1,10 @@
-variable1 = 0
+% Comparing two inputs %
 
-if (variable1 < 10){
-    etch("VARIABLE ONE IS LESS THAN", 10)
+% Taking in input %
+fetch(var1)
+fetch(var2)
+
+if (var1 > var2){
+    % Printing out the result % 
+    etch(var1, ">", var2)
 }

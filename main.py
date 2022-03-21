@@ -1,8 +1,45 @@
 import os
+import sys
+
+# System argument informatoin # 
+fileOutput = False
+run = True
+args = sys.argv 
+db = False 
 
 # File Directories #
 epi = "io/epitaph.epi"
-output = "io/output.txt"
+output = "TERMINAL" 
+
+# Main argument logic # 
+for i in args:
+    if len(args) == 2:
+        if i == "-h" or i == "--help":
+            msg = """
+            \t\t\tHELP
+
+            Specify output file by providing a file that starts with output. or it will default to terminal
+
+            Specify the input file for the esolang for a file that ends with .epi
+
+            Example arguments: directory/esolangFile.epi directory/output.txt 
+            
+            """
+            print(msg)
+            run = False 
+        if i == "-g" or i == "--git":
+            print("https://github.com/hiatus770/Epitaph")
+            run = False 
+    if i == "-d" or i == "--debug":
+        db = True 
+    if i.endswith(".epi"):
+        epi = i
+    if i.endswith(".txt"):
+        output = i
+
+# Print out the file directories # 
+print("OUTPUT DIRECTORY: ", output)
+print("INPUT DIRECTORY: ", epi)
 
 # Variables #
 idCnt = 0 # The id count for all the variables 
@@ -13,6 +50,8 @@ bracketID = 0
 true = 0
 false = 1
 ipt = ""
+debugList = list()
+outputList = list()
 
 # Clear the output file before printing out anything
 with open(output, "w") as clear:
@@ -33,7 +72,7 @@ def printFile(dir = output):
     print()
 
 # takes in a string and gives it a value !!!
-def accumulate(text, lineNumber=69):
+def accumulate(text, lineNumber=69.420):
 
     # variables # 
     global var  # array keeping track of id to value
@@ -70,7 +109,6 @@ def accumulate(text, lineNumber=69):
         elif type(obj) == str:
             if not obj.startswith('"'):
                 if obj in nameTracker:
-                    #print("FOUND VARIABLE", obj)
                     result[i] = var[names[obj]]
 
     # make sure whatever you append is an int and not a string :/
@@ -122,7 +160,7 @@ def accumulate(text, lineNumber=69):
             del sa[0]
             err = err + 2
     
-    print("ACCUMULATED:", result, "\n")
+    debug("ACCUMULATED:" + str(result) + "\n")
     return result
 
 # Will split line into methods and does matter when "", {} and () are present #
@@ -173,12 +211,15 @@ def merge(lines, a, b):
 
 # prints something to output.txt
 def toOutput(info):
-    with open(output, "a") as out:
-        for i in info:
-            i = str(i)
-            i = i.replace('"', "", -1)
-            i = i.replace(",", " ", -1)
-            out.write(str(i))
+    for i in info:
+        i = str(i)
+        i = i.replace('"', "", -1)
+        i = i.replace(",", " ", -1)
+        outputList.append(str(i))
+
+# debug? # 
+def debug(info):
+    debugList.append(str(info))
 
 # The print statement of Epitaph # 
 def etch(line):
@@ -211,7 +252,7 @@ def fetch(cmd):
 
 # Determines if input is true (0) or false (1) # 
 def truFalse(text):
-    print("EVALUATING: ", text) 
+    debug("EVALUATING: " + text) 
 
     # variables # 
     global var  # array keeping track of id to value
@@ -247,7 +288,6 @@ def truFalse(text):
         elif type(obj) == str:
             if not obj.startswith('"'):
                 if obj in nameTracker:
-                    print("FOUND VARIABLE", var[names[obj]])
                     result[i] = var[names[obj]]
 
     # find all == != < >
@@ -304,7 +344,7 @@ def truFalse(text):
             del md[0]
             err = err + 2
 
-    print("TRUE OR FALSE STATEMENT", result)
+    debug("TRUE OR FALSE STATEMENT: " + str(result))
     if result == [0]:
         return 0
     else:
@@ -312,10 +352,9 @@ def truFalse(text):
 
 # If statement thing for esolang # 
 def ifStatement(line, startIf, endIf):
-    print(line)
     code = list()
 
-    print("IF statement starts at", startIf, " Ends at", endIf)
+    debug("IF statement starts at " + str(startIf) + " Ends at " + str(endIf))
 
     for i in range(startIf+1, endIf):
         # print("APPENDING", i)
@@ -326,10 +365,8 @@ def ifStatement(line, startIf, endIf):
     closingBracket = line.find(")")
     condition = truFalse(line[openingBracket+1:closingBracket])
 
-    print(startIf, endIf)
-
     if condition == 0:
-        print("Running code: ", code)
+        debug("Running code: " + str(code))
         runChunk(code, startIf)
 
 # While loop! # 
@@ -344,13 +381,12 @@ def whileLoop(line, start, end):
         # print("APPENDING", i)
         code.append(ipt[i])
     
-    print("While loop from: ", start, end)
+    debug("While loop from: "+ str(start) + " " + str(end))
 
     while condition == 0:
         runChunk(code, start)   
         condition = truFalse(line[openingBracket+1:closingBracket])     
     
-
 # Make sure this is updated to run constantly or else if statements will be kinda wackilicious # 
 def runChunk(code, lineIndex):
     global bracketID # bracket id moment!!!
@@ -361,7 +397,7 @@ def runChunk(code, lineIndex):
     
     lineCount = lineIndex
 
-    print("Running lines: \n", code, "\n Starting at line", lineCount+1)
+    debug("Running lines: \n"+ str(code) + "\nStarting at line " + str(lineCount+1))
 
 
     while lineCount < len(ipt)-1: 
@@ -375,56 +411,56 @@ def runChunk(code, lineIndex):
         if l.startswith("%") and l.endswith("%"):
             isNotComment =  False
         else:
-            print(line) 
+            debug(str(line))
 
         if len(line) >= 3 and isNotComment:
             if line[1] == "=" and line[0] in nameTracker:
                 #  Assigning a value 
-                print("ASSIGNMENT:", l)
+                debug("ASSIGNMENT:" + str(l))
                 text = str(merge(line, 2, len(line)))
                 varID = names[line[0]] 
                 var[varID] = accumulate(text, lineCount)[0]
 
             elif line[1] == "=" and line[0] not in nameTracker:
                 # Creation of a new variable # 
-                print("CREATION OF:", line[0], "ON LINE", lineCount)
+                debug("CREATION OF: " + str(line[0]) + " ON LINE " + str(lineCount))
                 text = str(merge(line, 2, len(line)))
                 dataList = accumulate(text, lineCount)
-                print(dataList)
+                debug(str(dataList))
                 data = ""
                 if len(dataList) > 1:
-                    print("INVALID VARIABLE")
+                    debug("INVALID VARIABLE")
                 else:
                     data = dataList[0] 
                 var.append(data)
-                print("VALUE OF", line[0], "IS", data)
+                debug("VALUE OF " + str(line[0]) + " IS " + str(data))
                 names[line[0]] = idCnt 
                 nameTracker.add(line[0])
                 idCnt = idCnt + 1 
 
         if not line == []:
             if line[0].replace(" ", "").startswith("etch") and isNotComment:
-                print("ETCH FOUND!")
+                debug("ETCH FOUND!")
                 etch(line[0])
 
             if line[0].replace(" ", "").startswith("fetch") and isNotComment: 
-                print("FETCH FOUND")
+                debug("FETCH FOUND")
                 fetch(line[0])
 
             if line[0].startswith("if") and isNotComment: 
-                print("IF STATEMENT")
-                print(line)
+                debug("IF STATEMENT")
+                debug(line)
                 ifLine = merge(line, 0, len(line))
                 ifState = lineCount # where the if statement starts
                 ifEnd = lineCount
-                #print("IF LINE: ", ifLine)
+                debug("IF LINE: " + str(ifLine))
                 for i in range(lineCount, len(ipt)):
-                    #print("LOOKING FOR }"+ifLine[len(ifLine)-1])
+                    debug("LOOKING FOR }"+ifLine[len(ifLine)-1])
                     q = ipt[i].replace(" ", "")
                     q = q.replace("\n", "")
                     #print(q)
                     if (q == "}"+ifLine[len(ifLine)-1]):
-                        #print("FOUND CLOSING BRACKET FOR IF: ", i)
+                        debug("FOUND CLOSING BRACKET FOR IF: " + str(i))
                         ifEnd = i
                         lineCount = i
                         break; 
@@ -432,14 +468,14 @@ def runChunk(code, lineIndex):
                 ifStatement(ifLine, ifState, ifEnd)
 
             if line[0].startswith("while") and isNotComment: 
-                print("WHILE LOOP")
-                print(line)
+                debug("WHILE LOOP")
+                debug(line)
                 whileLine = merge(line, 0, len(line))
                 whileState = lineCount # where the if statement starts
                 whileEnd = lineCount
                 #print("IF LINE: ", ifLine)
                 for i in range(lineCount, len(ipt)):
-                    print("LOOKING FOR }"+whileLine[len(whileLine)-1])
+                    debug("LOOKING FOR }"+whileLine[len(whileLine)-1])
                     q = ipt[i].replace(" ", "")
                     q = q.replace("\n", "")
                     #print(q)
@@ -454,7 +490,7 @@ def runChunk(code, lineIndex):
 # Assigns all the bracket ID's in the code for code moment! # 
 def bracketAssign():
     global bracketID 
-    print("ASSIGNING BRACKET ID")
+    debug("ASSIGNING BRACKET ID")
     bracketID = 0
     cnt = 0
     while cnt < len(ipt):
@@ -467,25 +503,36 @@ def bracketAssign():
             ipt[cnt] = ipt[cnt].replace("\n", "").replace(" ", "")+str(bracketID)
             bracketID = bracketID - 1
         cnt = cnt + 1 
-    print("Assigned:", ipt)
+    debug("Assigned: " + str(ipt))
 
-# Initiates the code # 
+# Initiates the code and runs the .epi file # 
 def main():
     # Variables # 
     global ipt
     ipt = readTxt()
     lineCount = -1
     bracketAssign() 
-
     global bracketID # bracket id moment!!!
     global idCnt # some idcnt for var
     global var  # array keeping track of id to value
     global names  # dict keeping track of name to id
     global nameTracker  # keeps track of built variables
-
     runChunk(ipt, -1)
 
-# Compiling to a file, Printing the file, and running it to output.txt
-main()
+if run:
+    main()
 
-
+if output != "TERMINAL" and run == True:
+    with open(output, "w") as opt:
+        opt.writelines(outputList)
+        opt.write("\n\n")
+        if db:
+            opt.writelines(debugList)
+elif run == True:
+    print("\n\t\tOUTPUT")
+    for i in outputList:
+        print(i)
+    if db:
+        print("\n\t\tDEBUG")
+        for i in debugList: 
+            print(i)

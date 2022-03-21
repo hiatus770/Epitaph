@@ -1,7 +1,7 @@
 import os
 import sys
 
-# System argument informatoin # 
+# System argument information # 
 fileOutput = False
 run = True
 args = sys.argv 
@@ -9,7 +9,7 @@ db = False
 
 # File Directories #
 epi = "io/epitaph.epi"
-output = "TERMINAL" 
+output = "TERMINAL"
 
 # Main argument logic # 
 for i in args:

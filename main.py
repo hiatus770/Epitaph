@@ -521,18 +521,17 @@ def main():
 
 if run:
     main()
-
 if output != "TERMINAL" and run == True:
     with open(output, "w") as opt:
         opt.writelines(outputList)
         opt.write("\n\n")
         if db:
             opt.writelines(debugList)
-elif run == True:
+elif run:
     print("\n\t\tOUTPUT")
     for i in outputList:
         print(i)
-    if db:
+    if db: # db is debug boolean
         print("\n\t\tDEBUG")
         for i in debugList: 
             print(i)
